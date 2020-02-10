@@ -75,7 +75,6 @@ public class BooksDTO implements Serializable{
         this.quantity = quantity;
         this.price = price;
         this.importDate = importDate;
-        System.out.println(this);
     }
 
     public BooksDTO(String id, String title, String author, String category, String imgName, float price) {
@@ -99,7 +98,6 @@ public class BooksDTO implements Serializable{
         this.quantity = quantity;
         this.price = price;
         this.importDate = new Timestamp(System.currentTimeMillis());
-        System.out.println(this);
     }
 
     public String getId() {

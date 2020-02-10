@@ -17,6 +17,13 @@ public class DiscountsDTO {
     String userID;
     Timestamp expiredDate;
 
+    public DiscountsDTO(String code, float discountValue) {
+        this.code = code;
+        this.discountValue = discountValue;
+    }
+
+    
+    
     public DiscountsDTO(String code, float discountValue, Timestamp expiredDate) {
         this.code = code;
         this.discountValue = discountValue;
@@ -66,7 +73,7 @@ public class DiscountsDTO {
 
     @Override
     public String toString() {
-        return "Code=" + code + ", DiscountValue=" + discountValue + ", ExpiredDate=" + expiredDate;
+        return code + " - [" + discountValue + " %]";
     }
     
     

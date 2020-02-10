@@ -167,7 +167,7 @@ public class UserForm extends javax.swing.JFrame {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        cbxSetting.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<--Setting-->", "Change Pass", "Profile", "Log out", "" }));
+        cbxSetting.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<--Setting-->", "Change Pass", "Profile", "Log out" }));
         cbxSetting.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbxSettingActionPerformed(evt);
@@ -422,7 +422,7 @@ public class UserForm extends javax.swing.JFrame {
             for (BooksDTO booksDTO : list) {
                 model.addRow(booksDTO.toBuyVector());
             }
-
+ 
         } catch (SQLException ex) {
             Logger.getLogger(UserForm.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
@@ -435,13 +435,12 @@ public class UserForm extends javax.swing.JFrame {
         try {
             userDTO = userDAO.getUserByID(userID);
             lblUsername.setText(userDTO.getUserName());
-
+            
         } catch (SQLException ex) {
             Logger.getLogger(UserForm.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(UserForm.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 
 
@@ -453,6 +452,7 @@ public class UserForm extends javax.swing.JFrame {
                 changePass();
                 break;
             case 2:
+                System.out.println("sss");
                 updateProfile();
                 break;
             case 3:
@@ -539,6 +539,7 @@ public class UserForm extends javax.swing.JFrame {
     }
 
     private void updateProfile() {
+        initUserData();
         new ProfileForm(userDTO, this).setVisible(true);
 
     }

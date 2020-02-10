@@ -31,17 +31,7 @@ public class ChangePassForm extends javax.swing.JFrame {
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         this.setResizable(false);
         
-        JFrame frame = this;
-
-        frame.addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                int r = JOptionPane.showConfirmDialog(frame, "Are you sure you want to close this window?", "Close Window?", JOptionPane.YES_NO_OPTION);
-                if (r == JOptionPane.YES_OPTION) {
-                    frame.dispose();
-                }
-            }
-        });
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
 
     /**

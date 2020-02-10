@@ -511,6 +511,7 @@ public class AdminForm extends javax.swing.JFrame {
         txtPrice.setText("");
         cbxCategories.setSelectedIndex(0);
         txtImageName.setText("");
+        txtQuantity.setText("");
     }
 
     private void btnNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNewActionPerformed
@@ -699,6 +700,7 @@ public class AdminForm extends javax.swing.JFrame {
     }//GEN-LAST:event_cbxSettingActionPerformed
 
     private void updateProfile() {
+        initData();
         new ProfileForm(user, this).setVisible(true);
 
     }

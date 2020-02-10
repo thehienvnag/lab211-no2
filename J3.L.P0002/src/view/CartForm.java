@@ -6,6 +6,8 @@
 package view;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -101,11 +103,15 @@ public class CartForm extends javax.swing.JFrame {
                 cbCodes.removeAllItems();
 
                 for (DiscountsDTO discountsDTO : list) {
+                    cbCodes.addItem(new DiscountsDTO("Not Apply Code", 0));
                     cbCodes.addItem(discountsDTO);
                 }
                 cbCodes.setSelectedIndex(0);
                 DiscountsDTO discount = cbCodes.getItemAt(0);
                 txtDiscountValue.setText(discount.getDiscountValue() + "");
+            } else {
+                cbCodes.removeAllItems();
+                cbCodes.addItem(new DiscountsDTO("No Code Available", 0));
             }
 
         } catch (SQLException ex) {
@@ -137,7 +143,12 @@ public class CartForm extends javax.swing.JFrame {
             float truePrice = (float) (total - total * currentDiscount.getDiscountValue() * 0.01);
             txtTruePrice.setText(truePrice + "");
             txtDiscountValue.setText(currentDiscount.getDiscountValue() + "");
-            txtDiscountExp.setText(Ulti.getDateFormatDetail(currentDiscount.getExpiredDate()));
+            if (currentDiscount.getExpiredDate() != null) {
+                txtDiscountExp.setText(Ulti.getDateFormatDetail(currentDiscount.getExpiredDate()));
+            }else{
+                txtDiscountExp.setText("");
+            }
+
         } else {
             txtTruePrice.setText(total + "");
         }
@@ -554,11 +565,11 @@ public class CartForm extends javax.swing.JFrame {
 
     private void btnConfirmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfirmActionPerformed
 
-        if(listBook.isEmpty()){
+        if (listBook.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Empty cart!");
             return;
         }
-        
+
         if (!isConfirmed) {
             int r = JOptionPane.showConfirmDialog(this, "CONFIRM BUYING BOOKS?", "CONFIRMATION?", JOptionPane.YES_NO_OPTION);
 
@@ -590,7 +601,7 @@ public class CartForm extends javax.swing.JFrame {
                 }
 
             }
-        } else{
+        } else {
             int r = JOptionPane.showConfirmDialog(this, "Finish buying book, continue shopping?", "Continue?", JOptionPane.YES_NO_OPTION);
 
             if (r == JOptionPane.YES_OPTION) {
@@ -600,9 +611,7 @@ public class CartForm extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_btnConfirmActionPerformed
-    
-   
-    
+
     private String getBookName(String id) {
         for (BooksDTO booksDTO : listBook) {
             if (booksDTO.getId().equals(id)) {

@@ -22,7 +22,6 @@ public class ProfileForm extends javax.swing.JFrame {
     private String formType;
     private RegistrationDAO userDAO = new RegistrationDAO();
     private RegistrationDTO user;
-
     /**
      * Creates new form AdminForm
      */
@@ -40,6 +39,7 @@ public class ProfileForm extends javax.swing.JFrame {
         formType = "Update";
         btnSubmit.setText(formType);
         this.user = user;
+        
         this.setResizable(false);
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.setLocationRelativeTo(frame);
@@ -319,9 +319,9 @@ public class ProfileForm extends javax.swing.JFrame {
     }
 
     private void updateUser() throws ClassNotFoundException, SQLException {
-        RegistrationDTO user = getDataInput();
+        RegistrationDTO userDTO = getDataInput();
         if (user != null) {
-            boolean check = userDAO.updateData(user);
+            boolean check = userDAO.updateData(userDTO);
             if(check){
                 JOptionPane.showMessageDialog(this, "Successfully Updated!!!");
             }else{
@@ -384,8 +384,8 @@ public class ProfileForm extends javax.swing.JFrame {
         } else {
             txtPass.setEditable(false);
             txtPassConfirm.setEditable(false);
-            txtPass.setText("*****************");
-            txtPassConfirm.setText("****************");
+            txtPass.setText("***********");
+            txtPassConfirm.setText("***********");
         }
 
         if (!email.matches("^[a-z][a-z0-9_\\.]{5,32}@[a-z0-9]{2,}(\\.[a-z0-9]{2,4}){1,2}$")) {

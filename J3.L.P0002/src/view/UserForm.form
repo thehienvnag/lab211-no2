@@ -219,12 +219,11 @@
         <Component class="javax.swing.JComboBox" name="cbxSetting">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="5">
+              <StringArray count="4">
                 <StringItem index="0" value="&lt;--Setting--&gt;"/>
                 <StringItem index="1" value="Change Pass"/>
                 <StringItem index="2" value="Profile"/>
                 <StringItem index="3" value="Log out"/>
-                <StringItem index="4" value=""/>
               </StringArray>
             </Property>
           </Properties>

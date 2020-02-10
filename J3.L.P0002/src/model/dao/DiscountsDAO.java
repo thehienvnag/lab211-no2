@@ -49,7 +49,6 @@ public class DiscountsDAO {
     public boolean insertDiscount(DiscountsDTO discount) throws SQLException, ClassNotFoundException{
         int affectedRows = 0;
         String sql = "INSERT INTO Discounts (DiscountCode, DiscountValue, UserID, ExpiredDate) VALUES (?,?,?,?)";
-        System.out.println(discount);
         try {
             conn = DBConnection.openConnection();
             pst = conn.prepareStatement(sql);
@@ -64,7 +63,6 @@ public class DiscountsDAO {
             pst.setTimestamp(4, expiredDate);
             
             affectedRows = pst.executeUpdate();
-            System.out.println(affectedRows == 1);
             
         } finally{
             closeConnection();     

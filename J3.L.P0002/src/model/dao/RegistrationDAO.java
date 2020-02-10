@@ -86,8 +86,9 @@ public class RegistrationDAO {
                 String phone = rs.getString("Phone");
                 String address = rs.getString("Address");
                 String email = rs.getString("Email");
+                RegistrationDTO user = new RegistrationDTO(userId, userName, phone, address, email);
+                return user;
                 
-                return new RegistrationDTO(userId, userName, phone, address, email);
             }
         } finally {
             closeConnection();
@@ -100,7 +101,6 @@ public class RegistrationDAO {
         String sql = "INSERT INTO Registration (UserID, Username, Password, Phone, Address, Email, Role, Status) VALUES(?,?,?,?,?,?,?,?)";
         int affectedRow = 0;
         try {
-            System.out.println(data);
             conn = DBConnection.openConnection();
             pst = conn.prepareStatement(sql);
 
@@ -129,7 +129,6 @@ public class RegistrationDAO {
             pst = conn.prepareStatement(sql);
             pst.setString(1, userID);
             pst.setString(2, Encryption.getEncryptPass(pass));
-            System.out.println(Encryption.getEncryptPass(pass));
             pst.setString(3, status);
 
             rs = pst.executeQuery();
@@ -166,13 +165,14 @@ public class RegistrationDAO {
     }
 
     public boolean changePassword(String userId, String oldPassword, String newPass) throws ClassNotFoundException, SQLException {
-        String sql = "UPDATE Registration SET Password=? WHERE UserID=? and Password=? and Status=1";
+        String sql = "UPDATE Registration SET Password=? WHERE UserID=? and Password=? and Status=?";
         String encryptNewPass = Encryption.getEncryptPass(newPass);
         String encryptOldPass = Encryption.getEncryptPass(oldPassword);
         int affectedRow = 0;
         try {
             conn = DBConnection.openConnection();
             pst = conn.prepareStatement(sql);
+            pst.setString(4, "Active");
 
             pst.setString(1, encryptNewPass);
             pst.setString(2, userId);
