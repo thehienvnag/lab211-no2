@@ -6,15 +6,21 @@
 package view;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import model.dao.DiscountsDAO;
 import model.dao.RegistrationDAO;
+import model.dto.DiscountsDTO;
 import model.dto.RegistrationDTO;
 import ulti.Ulti;
 
@@ -28,10 +34,10 @@ public class DiscountAddingForm extends javax.swing.JFrame {
      * Creates new form PromotionAddingForm
      */
     int DEFAULT_RANK = 5;
-    DefaultMutableTreeNode root = new DefaultMutableTreeNode("Promotion Management");
+    DefaultMutableTreeNode root = new DefaultMutableTreeNode("Discounts Management");
     DefaultTreeModel treeModel = new DefaultTreeModel(root);
     RegistrationDAO userDAO;
-   
+    Vector<RegistrationDTO> userList = new Vector<>();
 
     public DiscountAddingForm(RegistrationDAO userDAO) {
         initComponents();
@@ -49,22 +55,92 @@ public class DiscountAddingForm extends javax.swing.JFrame {
             }
         });
 
-   
-        initTree();
         initUserCbx();
-        
+        initTree();
+        registerSearch();
+
     }
 
+    private void initTreeForUserSearch(RegistrationDTO user) {
+        DiscountsDAO discountDAO = new DiscountsDAO();
+        resetTree();
+        try {
+            DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(user);
+            root.add(treeNode);
+            Vector<DiscountsDTO> discountList = discountDAO.getUserDiscounts(user.getUserID());
+            for (DiscountsDTO discountsDTO : discountList) {
+                treeNode.add(new DefaultMutableTreeNode(discountsDTO));
+                System.out.println(discountsDTO);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DiscountAddingForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(DiscountAddingForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        treeDiscount.setModel(treeModel);
+        treeDiscount.updateUI();
+        expandAllNodes(treeDiscount, 0, treeDiscount.getRowCount());
+    }
 
+    private void registerSearch() {
+        txtSearchUser.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                searchUser();
+            }
 
-   
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                searchUser();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                searchUser();
+            }
+        });
+    }
+
+    private void searchUser() {
+        String search = txtSearchUser.getText().trim().toLowerCase();
+        if (search.isEmpty()) {
+            initTree();
+        } else {
+            setSelectedUserSearch(search);
+        }
+
+    }
+
+    private void setSelectedUserSearch(String searchName) {
+
+        for (int i = 0; i < cbxUser.getItemCount(); i++) {
+            RegistrationDTO user = cbxUser.getItemAt(i);
+            String username = user.getUserName().toLowerCase();
+            if (username.contains(searchName)) {
+                cbxUser.setSelectedIndex(i);
+                RegistrationDTO userSelected = (RegistrationDTO) cbxUser.getSelectedItem();
+                initTreeForUserSearch(userSelected);
+                return;
+            }
+        }
+    }
+
+    private void setSelectedUser(String userID) {
+        for (int i = 0; i < cbxUser.getItemCount(); i++) {
+            RegistrationDTO user = cbxUser.getItemAt(i);
+            if (user.getUserID().equals(userID)) {
+                cbxUser.setSelectedIndex(i);
+                return;
+            }
+        }
+    }
 
     private void initUserCbx() {
         try {
-            Vector<RegistrationDTO> list = userDAO.getUserRole("USER");
+            userList = userDAO.getUserRole("USER");
             cbxUser.removeAllItems();
 
-            for (RegistrationDTO userDTO : list) {
+            for (RegistrationDTO userDTO : userList) {
                 cbxUser.addItem(userDTO);
             }
 
@@ -76,7 +152,6 @@ public class DiscountAddingForm extends javax.swing.JFrame {
     }
 
     private void resetTree() {
-
         root.removeAllChildren();
     }
 
@@ -93,25 +168,30 @@ public class DiscountAddingForm extends javax.swing.JFrame {
     private void initTree() {
 
         root.removeAllChildren();
-        treePromotion.setExpandsSelectedPaths(false);
+        treeDiscount.setExpandsSelectedPaths(false);
 
         resetTree();
-        
-        
 
-//            for (PromotionDTO pro : list) {
-//
-//                DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(pro);
-//                
-//                for (PromotionListDTO proList : userInProList) {
-//                    DefaultMutableTreeNode leaf = new DefaultMutableTreeNode(proList);
-//                    treeNode.add(leaf);
-//                }
-//            }
-        treePromotion.setModel(treeModel);
-        treePromotion.updateUI();
-        expandAllNodes(treePromotion, 0, treePromotion.getRowCount());
-
+        for (RegistrationDTO user : userList) {
+            System.out.println(user);
+            DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(user);
+            root.add(treeNode);
+            DiscountsDAO discountDAO = new DiscountsDAO();
+            try {
+                Vector<DiscountsDTO> discountList = discountDAO.getUserDiscounts(user.getUserID());
+                for (DiscountsDTO discountsDTO : discountList) {
+                    treeNode.add(new DefaultMutableTreeNode(discountsDTO));
+                    System.out.println(discountsDTO);
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(DiscountAddingForm.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(DiscountAddingForm.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        treeDiscount.setModel(treeModel);
+        treeDiscount.updateUI();
+        expandAllNodes(treeDiscount, 0, treeDiscount.getRowCount());
     }
 
     /**
@@ -134,8 +214,14 @@ public class DiscountAddingForm extends javax.swing.JFrame {
         btnGenerateCode = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
         txtDiscount = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        txtExpiredDate = new javax.swing.JTextField();
+        txtSearchUser = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        btnRemoveDiscount = new javax.swing.JButton();
+        btnNew = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        treePromotion = new javax.swing.JTree();
+        treeDiscount = new javax.swing.JTree();
 
         jLabel8.setText("jLabel8");
 
@@ -170,7 +256,25 @@ public class DiscountAddingForm extends javax.swing.JFrame {
             }
         });
 
-        jLabel4.setText("Discount:");
+        jLabel4.setText("Discount (%):");
+
+        jLabel5.setText("ExpiredDate");
+
+        jLabel6.setText("Search User");
+
+        btnRemoveDiscount.setText("REMOVE DISCOUNT");
+        btnRemoveDiscount.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRemoveDiscountActionPerformed(evt);
+            }
+        });
+
+        btnNew.setText("NEW");
+        btnNew.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnNewActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -179,38 +283,50 @@ public class DiscountAddingForm extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel1))
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addGap(18, 46, Short.MAX_VALUE)
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(cbxUser, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(txtDiscountCode, javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(btnGenerateCode, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
-                                    .addComponent(txtDiscount)))
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addGap(33, 33, 33)
-                                .addComponent(btnAddDiscount)
-                                .addGap(0, 0, Short.MAX_VALUE))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
                         .addGap(34, 34, 34)
                         .addComponent(jLabel2)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap(31, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel5)
+                        .addGap(18, 18, Short.MAX_VALUE)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(cbxUser, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtExpiredDate, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtDiscountCode, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnGenerateCode, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtDiscount, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                                .addComponent(txtSearchUser)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jLabel6)))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel4)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel1))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnNew)
+                .addGap(14, 14, 14)
+                .addComponent(btnAddDiscount)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnRemoveDiscount)
+                .addGap(20, 20, 20))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtSearchUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cbxUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
@@ -224,92 +340,161 @@ public class DiscountAddingForm extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(txtDiscount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
-                .addComponent(btnAddDiscount)
-                .addGap(29, 29, 29))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtExpiredDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5))
+                .addGap(24, 24, 24)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnAddDiscount)
+                    .addComponent(btnRemoveDiscount)
+                    .addComponent(btnNew))
+                .addContainerGap())
         );
 
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("User Discounts");
-        treePromotion.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
-        treePromotion.addMouseListener(new java.awt.event.MouseAdapter() {
+        treeDiscount.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
+        treeDiscount.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                treePromotionMouseClicked(evt);
+                treeDiscountMouseClicked(evt);
             }
         });
-        jScrollPane1.setViewportView(treePromotion);
+        jScrollPane1.setViewportView(treeDiscount);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(41, 41, 41)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 415, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(42, Short.MAX_VALUE))
+                .addGap(33, 33, 33))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(27, 27, 27)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(27, Short.MAX_VALUE))
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 295, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void treePromotionMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_treePromotionMouseClicked
+    private void treeDiscountMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_treeDiscountMouseClicked
+        DefaultMutableTreeNode nodeSelected = (DefaultMutableTreeNode) treeDiscount.getLastSelectedPathComponent();
+        if (nodeSelected != null) {
+            Object objectSelected = nodeSelected.getUserObject();
 
-    }//GEN-LAST:event_treePromotionMouseClicked
+            if (objectSelected instanceof RegistrationDTO) {
+                RegistrationDTO userSelected = (RegistrationDTO) objectSelected;
+                setSelectedUser(userSelected.getUserID());
+            } else if (objectSelected instanceof DiscountsDTO) {
+                DiscountsDTO discount = (DiscountsDTO) objectSelected;
+                txtDiscountCode.setEditable(false);
+                txtDiscountCode.setText(discount.getCode());
+                txtDiscount.setText(String.valueOf(discount.getDiscountValue()));
+                txtExpiredDate.setText(Ulti.getDateFormatDetail(discount.getExpiredDate()));
+            }
+        }
+    }//GEN-LAST:event_treeDiscountMouseClicked
 
     private void btnAddDiscountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddDiscountActionPerformed
-
+        String valid = "";
         String userID = ((RegistrationDTO) cbxUser.getModel().getSelectedItem()).getUserID();
-        String discountCode = txtDiscountCode.getText().trim();
-        float discountValue;
-        
-        
-        
-        initTree();
+        String code = txtDiscountCode.getText().trim().toUpperCase();
+        float discountValue = -1;
 
+        if (!code.matches("[A-Z0-9]{6}")) {
+            valid += "Discount Code must be number or alphabet (6 letters allowed)!\n";
+        }
+        try {
+            discountValue = Float.parseFloat(txtDiscount.getText().trim());
+        } catch (Exception e) {
+            valid += "Discount Value must be decimal or integer!\n";
+        }
+        Timestamp expiredDate = null;
+        try {
+            expiredDate = Ulti.getDate(txtExpiredDate.getText().trim());
+        } catch (ParseException e) {
+            if (e.getMessage().equals("INVALID_TIME")) {
+                valid += "At least one day before expired!\n";
+            } else {
+                valid += "Invalid date format!\n";
+            }
+        }
+        if (valid.isEmpty()) {
+            DiscountsDAO discountDAO = new DiscountsDAO();
 
+            try {
+                boolean check = discountDAO.insertDiscount(new DiscountsDTO(code, discountValue, userID, expiredDate));
+                System.out.println(check);
+                if (check) {
+                    JOptionPane.showMessageDialog(this, "Successfully added new discount code!");
+                    initTree();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Fail to add new discount code!");
+                }
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Discount Code is duplicated!");
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(DiscountAddingForm.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, valid);
+        }
     }//GEN-LAST:event_btnAddDiscountActionPerformed
 
     private void cbxUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbxUserActionPerformed
-        // TODO add your handling code here:
+
     }//GEN-LAST:event_cbxUserActionPerformed
 
     private void btnGenerateCodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGenerateCodeActionPerformed
-        String code = Ulti.generateCode();
-        if(!txtDiscountCode.getText().trim().isEmpty()){
-            int r = JOptionPane.showConfirmDialog(this, "Are you sure to generate new discount code?", "New code?", JOptionPane.YES_NO_OPTION);
-            if(r == JOptionPane.YES_OPTION){
-                txtDiscountCode.setText(code);
-            }
-        }else{
-            txtDiscountCode.setText(code);
-        }
-        
+        int codeLength = 6;
+        String code = Ulti.generateCode(codeLength);
+        txtDiscountCode.setEditable(true);
+        txtDiscountCode.setText(code);
     }//GEN-LAST:event_btnGenerateCodeActionPerformed
+
+    private void btnRemoveDiscountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveDiscountActionPerformed
+
+    }//GEN-LAST:event_btnRemoveDiscountActionPerformed
+
+    private void btnNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNewActionPerformed
+        int r = JOptionPane.showConfirmDialog(this, "New Discount Code Input?", "Reset form?", JOptionPane.YES_NO_OPTION);
+        if (r == JOptionPane.YES_OPTION) {
+            cbxUser.setSelectedIndex(0);
+            txtDiscountCode.setEditable(true);
+            txtDiscountCode.setText("");
+            txtDiscount.setText("");
+            txtExpiredDate.setText("");
+        }
+    }//GEN-LAST:event_btnNewActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddDiscount;
     private javax.swing.JButton btnGenerateCode;
+    private javax.swing.JButton btnNew;
+    private javax.swing.JButton btnRemoveDiscount;
     private javax.swing.JComboBox<model.dto.RegistrationDTO> cbxUser;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTree treePromotion;
+    private javax.swing.JTree treeDiscount;
     private javax.swing.JTextField txtDiscount;
     private javax.swing.JTextField txtDiscountCode;
+    private javax.swing.JTextField txtExpiredDate;
+    private javax.swing.JTextField txtSearchUser;
     // End of variables declaration//GEN-END:variables
 }

@@ -19,6 +19,14 @@ public class RegistrationDTO {
         this.userID = userID;
         this.userName = userName;
     }
+
+    public RegistrationDTO(String userID, String userName, String phone, String address, String email) {
+        this.userID = userID;
+        this.userName = userName;
+        this.phone = phone;
+        this.address = address;
+        this.email = email;
+    }
     
     
 

@@ -42,6 +42,28 @@ public class BooksDAO {
 
     }
     
+    public void setBookQuantity(String bookID, int quantity, Connection connection) throws SQLException{
+        int affected = -1;
+        String sql = "UPDATE Books SET Quantity = Quantity - ? WHERE BookID=? AND Quantity >= ?";
+        PreparedStatement pst = null;
+        
+        try {
+            pst = connection.prepareStatement(sql);
+            pst.setInt(1, quantity);
+            pst.setString(2, bookID);
+            pst.setInt(3, quantity);
+            
+            affected = pst.executeUpdate();
+        } finally{
+            if(pst != null){
+                pst.close();
+            }
+        }
+        if(affected != 1){
+            throw new SQLException(bookID);
+        }
+    }
+    
     public Vector<BooksDTO> searchBook(String input) throws ClassNotFoundException, SQLException{
         Vector<BooksDTO> list = new Vector<>();
         String sql = "SELECT BookID, BookTitle, Price, Author, Quantity, Categories, ImageName, ImportDate, Status from Books "

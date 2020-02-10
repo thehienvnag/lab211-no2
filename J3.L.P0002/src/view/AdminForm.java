@@ -17,6 +17,7 @@ import javax.swing.table.DefaultTableModel;
 import model.dao.BooksDAO;
 import model.dao.RegistrationDAO;
 import model.dto.BooksDTO;
+import model.dto.RegistrationDTO;
 import ulti.Ulti;
 
 /**
@@ -25,7 +26,6 @@ import ulti.Ulti;
  */
 public class AdminForm extends javax.swing.JFrame {
 
-    private String DEFAULT_PASS = "1234";
     private RegistrationDAO userDAO;
     private BooksDAO bookDAO = new BooksDAO();
     private JTable currentTbl;
@@ -33,6 +33,7 @@ public class AdminForm extends javax.swing.JFrame {
     private String id;
     private ChangePassForm changePassForm;
     private DiscountAddingForm promotionForm;
+    private RegistrationDTO user;
 
     /**
      * Creates new form AdminForm
@@ -51,10 +52,9 @@ public class AdminForm extends javax.swing.JFrame {
 
     private void initData() {
         try {
-
             initTable(tblBooks);
-            String welcome = userDAO.getUsername(id);
-            lblUsername.setText(welcome);
+            user = userDAO.getUserByID(id);
+            lblUsername.setText(user.getUserName());
 
         } catch (SQLException ex) {
             Logger.getLogger(AdminForm.class.getName()).log(Level.SEVERE, null, ex);
@@ -223,7 +223,7 @@ public class AdminForm extends javax.swing.JFrame {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        cbxSetting.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<--Setting-->", "Change Pass", "Log out" }));
+        cbxSetting.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<--Setting-->", "Change Pass", "Profile", "Log out" }));
         cbxSetting.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbxSettingActionPerformed(evt);
@@ -690,11 +690,19 @@ public class AdminForm extends javax.swing.JFrame {
                 changePass();
                 break;
             case 2:
+                updateProfile();
+                break;
+            case 3:
                 logOut();
                 break;
         }
     }//GEN-LAST:event_cbxSettingActionPerformed
 
+    private void updateProfile() {
+        new ProfileForm(user, this).setVisible(true);
+
+    }
+    
     private void btnAddDiscountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddDiscountActionPerformed
 
         promotionForm = new DiscountAddingForm(userDAO);

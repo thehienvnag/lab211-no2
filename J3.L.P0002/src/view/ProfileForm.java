@@ -6,9 +6,9 @@
 package view;
 
 import java.sql.SQLException;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import model.dao.RegistrationDAO;
 import model.dto.RegistrationDTO;
@@ -21,6 +21,7 @@ public class ProfileForm extends javax.swing.JFrame {
 
     private String formType;
     private RegistrationDAO userDAO = new RegistrationDAO();
+    private RegistrationDTO user;
 
     /**
      * Creates new form AdminForm
@@ -34,15 +35,16 @@ public class ProfileForm extends javax.swing.JFrame {
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
 
-    public ProfileForm(RegistrationDTO user, UserForm userForm) {
+    public ProfileForm(RegistrationDTO user, JFrame frame) {
         initComponents();
         formType = "Update";
         btnSubmit.setText(formType);
+        this.user = user;
         this.setResizable(false);
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        this.setLocationRelativeTo(userForm);
-//        txtUserID.setText(user.getUserID());
-        txtUserID.setEditable(false);
+        this.setLocationRelativeTo(frame);
+        
+        setUserData();
     }
 
     /**
@@ -302,6 +304,19 @@ public class ProfileForm extends javax.swing.JFrame {
             }
         }
     }
+    
+    private void setUserData(){
+        txtUserID.setText(user.getUserID());
+        txtUserID.setEditable(false);
+        txtUserName.setText(user.getUserName());
+        txtPass.setEditable(false);
+        txtPassConfirm.setEditable(false);
+        txtPass.setText("***********");
+        txtPassConfirm.setText("***********");
+        txtPhone.setText(user.getPhone());
+        txtEmail.setText(user.getEmail());
+        txtAddress.setText(user.getAddress());
+    }
 
     private void updateUser() throws ClassNotFoundException, SQLException {
         RegistrationDTO user = getDataInput();
@@ -334,6 +349,7 @@ public class ProfileForm extends javax.swing.JFrame {
         txtPhone.setText("");
         txtPass.setText("");
         txtPassConfirm.setText("");
+        txtAddress.setText("");
 
     }
 

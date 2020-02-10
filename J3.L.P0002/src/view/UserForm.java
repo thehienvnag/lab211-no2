@@ -4,28 +4,48 @@
  * and open the template in the editor.
  */
 package view;
+
+import java.sql.SQLException;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import model.dao.BooksDAO;
 import model.dao.RegistrationDAO;
+import model.dto.BooksDTO;
 import model.dto.RegistrationDTO;
+import ulti.Ulti;
 
 /**
  *
  * @author THE HIEN
  */
 public class UserForm extends javax.swing.JFrame {
-    
+
     private RegistrationDAO userDAO;
     private LoginForm loginForm;
     private ChangePassForm changePassForm;
     private RegistrationDTO userDTO;
+    private String userID;
+    private BooksDTO currentSelected;
+    private Vector<BooksDTO> listBookInCart = new Vector<>();
 
     /**
      * Creates new form AdminForm
      */
-    public UserForm(String id, RegistrationDAO userDAO, LoginForm loginForm) {
+    public UserForm(String userID, RegistrationDAO userDAO, LoginForm loginForm) {
         initComponents();
+        this.userID = userID;
         this.loginForm = loginForm;
+        this.userDAO = userDAO;
         this.setLocationRelativeTo(loginForm);
+
+        initUserData();
+        initTblBooks();
+        txtBookID.setEditable(false);
+        txtBookName.setEditable(false);
+        txtPrice.setEditable(false);
     }
 
     /**
@@ -46,12 +66,13 @@ public class UserForm extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        tblBooks = new javax.swing.JTable();
-        txtSearch = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         jCheckBox1 = new javax.swing.JCheckBox();
         jButton1 = new javax.swing.JButton();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        jMenu2 = new javax.swing.JMenu();
+        jButton2 = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         cbxSetting = new javax.swing.JComboBox<>();
         jLabel2 = new javax.swing.JLabel();
@@ -59,21 +80,23 @@ public class UserForm extends javax.swing.JFrame {
         jPanel3 = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        tblBooks1 = new javax.swing.JTable();
-        txtSearch1 = new javax.swing.JTextField();
+        tblBooks = new javax.swing.JTable();
+        txtSearch = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
         btnViewHistory = new javax.swing.JButton();
         jPanel7 = new javax.swing.JPanel();
         btnViewCart = new javax.swing.JButton();
         jLabel8 = new javax.swing.JLabel();
-        txtBookSelect = new javax.swing.JTextField();
         jLabel9 = new javax.swing.JLabel();
-        jSpinner1 = new javax.swing.JSpinner();
         jLabel10 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jButton3 = new javax.swing.JButton();
+        txtPrice = new javax.swing.JTextField();
+        btnAddCart = new javax.swing.JButton();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
+        txtAmount = new javax.swing.JTextField();
+        txtBookID = new javax.swing.JTextField();
+        txtBookName = new javax.swing.JTextField();
+        jLabel13 = new javax.swing.JLabel();
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -109,31 +132,6 @@ public class UserForm extends javax.swing.JFrame {
 
         jLabel6.setText("jLabel6");
 
-        tblBooks.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "BookID", "Title", "Author", "Category", "Price", "Quantity", "ImageName"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Float.class, java.lang.Integer.class, java.lang.String.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, true, true
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        jScrollPane1.setViewportView(tblBooks);
-
         jLabel4.setText("SEARCH");
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
@@ -141,31 +139,29 @@ public class UserForm extends javax.swing.JFrame {
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel4))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE))
+                .addContainerGap(0, Short.MAX_VALUE)
+                .addComponent(jLabel4)
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jLabel4)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jCheckBox1.setText("jCheckBox1");
 
         jButton1.setText("jButton1");
+
+        jMenu1.setText("File");
+        jMenuBar1.add(jMenu1);
+
+        jMenu2.setText("Edit");
+        jMenuBar1.add(jMenu2);
+
+        jButton2.setText("jButton2");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -184,19 +180,19 @@ public class UserForm extends javax.swing.JFrame {
 
         jPanel6.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        tblBooks1.setModel(new javax.swing.table.DefaultTableModel(
+        tblBooks.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "BookID", "Title", "Author", "Category", "Price", "Quantity", "ImageName"
+                "BookID", "Title", "Author", "Category", "Price", "ImageName"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Float.class, java.lang.Integer.class, java.lang.String.class
+                java.lang.Integer.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Float.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, true, true
+                false, false, false, false, false, true
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -207,7 +203,12 @@ public class UserForm extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane2.setViewportView(tblBooks1);
+        tblBooks.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblBooksMouseClicked(evt);
+            }
+        });
+        jScrollPane2.setViewportView(tblBooks);
 
         jLabel7.setText("SEARCH");
 
@@ -228,7 +229,7 @@ public class UserForm extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
                         .addComponent(btnViewHistory)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(txtSearch1, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jLabel7))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE))
@@ -240,7 +241,7 @@ public class UserForm extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7)
-                    .addComponent(txtSearch1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnViewHistory))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE)
@@ -250,7 +251,7 @@ public class UserForm extends javax.swing.JFrame {
         jPanel7.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         btnViewCart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/cart.png"))); // NOI18N
-        btnViewCart.setText("0");
+        btnViewCart.setText("0 items");
         btnViewCart.setToolTipText("");
         btnViewCart.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -258,18 +259,26 @@ public class UserForm extends javax.swing.JFrame {
             }
         });
 
-        jLabel8.setText("Selected Book:");
+        jLabel8.setText("Book ID:");
 
-        jLabel9.setText("Quantity:");
+        jLabel9.setText("Amount:");
 
         jLabel10.setText("Price:");
 
-        jButton3.setText("ADD TO CART");
+        btnAddCart.setText("ADD TO CART");
+        btnAddCart.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddCartActionPerformed(evt);
+            }
+        });
 
         jLabel11.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/book.png"))); // NOI18N
         jLabel11.setText("BOOK SHOPPING");
 
         jLabel12.setText("Cart:");
+
+        jLabel13.setText("Title:");
 
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
@@ -281,25 +290,29 @@ public class UserForm extends javax.swing.JFrame {
                     .addGroup(jPanel7Layout.createSequentialGroup()
                         .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel8)
+                            .addComponent(jLabel13))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtBookID)
+                            .addComponent(txtBookName)))
+                    .addGroup(jPanel7Layout.createSequentialGroup()
+                        .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel9)
                             .addComponent(jLabel10)
                             .addComponent(jLabel12))
                         .addGap(18, 18, 18)
                         .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jTextField1)
-                            .addComponent(jSpinner1)
-                            .addComponent(txtBookSelect)
-                            .addComponent(btnViewCart, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap())
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
-                        .addGap(0, 49, Short.MAX_VALUE)
-                        .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
-                                .addComponent(jButton3)
-                                .addGap(59, 59, 59))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
+                            .addGroup(jPanel7Layout.createSequentialGroup()
                                 .addComponent(jLabel11)
-                                .addGap(39, 39, 39))))))
+                                .addGap(0, 39, Short.MAX_VALUE))
+                            .addComponent(txtPrice)
+                            .addComponent(btnViewCart, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(txtAmount))))
+                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnAddCart)
+                .addGap(83, 83, 83))
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -310,20 +323,24 @@ public class UserForm extends javax.swing.JFrame {
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnViewCart)
                     .addComponent(jLabel12))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel8)
-                    .addComponent(txtBookSelect, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(txtBookID, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel9))
+                    .addComponent(jLabel13)
+                    .addComponent(txtBookName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel9)
+                    .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtPrice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(jButton3)
+                .addComponent(btnAddCart)
                 .addContainerGap())
         );
 
@@ -335,8 +352,8 @@ public class UserForm extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -355,9 +372,7 @@ public class UserForm extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 11, Short.MAX_VALUE))
+                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -391,12 +406,44 @@ public class UserForm extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-  
+    private void resetTable(DefaultTableModel model) {
 
-    private void initUserData(){
-        
+        while (model.getRowCount() > 0) {
+            model.removeRow(0);
+        }
     }
- 
+
+    private void initTblBooks() {
+        try {
+            BooksDAO bookDAO = new BooksDAO();
+            Vector<BooksDTO> list = bookDAO.getActiveBooks();
+            DefaultTableModel model = (DefaultTableModel) tblBooks.getModel();
+            resetTable(model);
+            for (BooksDTO booksDTO : list) {
+                model.addRow(booksDTO.toBuyVector());
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(UserForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(UserForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
+    private void initUserData() {
+        try {
+            userDTO = userDAO.getUserByID(userID);
+            lblUsername.setText(userDTO.getUserName());
+
+        } catch (SQLException ex) {
+            Logger.getLogger(UserForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(UserForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
 
     private void cbxSettingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbxSettingActionPerformed
         int selectedIndex = cbxSetting.getSelectedIndex();
@@ -423,14 +470,79 @@ public class UserForm extends javax.swing.JFrame {
     }//GEN-LAST:event_btnViewHistoryActionPerformed
 
     private void btnViewCartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnViewCartActionPerformed
-        // TODO add your handling code here:
+        new CartForm(listBookInCart, userDTO, this).setVisible(true);
     }//GEN-LAST:event_btnViewCartActionPerformed
 
-    private void updateProfile(){
-        new ProfileForm(userDTO, this).setVisible(true);
-        
-    }
+    private void tblBooksMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblBooksMouseClicked
+        int selectedIndex = tblBooks.getSelectedRow();
+
+        String id = (String) tblBooks.getModel().getValueAt(selectedIndex, 0);
+        String title = (String) tblBooks.getModel().getValueAt(selectedIndex, 1);
+        String author = (String) tblBooks.getModel().getValueAt(selectedIndex, 2);
+        String category = (String) tblBooks.getModel().getValueAt(selectedIndex, 3);
+        float price = (Float) tblBooks.getModel().getValueAt(selectedIndex, 4);
+        String imgName = (String) tblBooks.getModel().getValueAt(selectedIndex, 5);
+
+        currentSelected = new BooksDTO(id, title, author, category, imgName, price);
+
+        if (currentSelected != null) {
+
+            txtBookID.setText(currentSelected.getId());
+            txtBookName.setText(currentSelected.getTitle());
+            txtPrice.setText(String.valueOf(currentSelected.getPrice()));
+        }
+
+    }//GEN-LAST:event_tblBooksMouseClicked
+
+    private void btnAddCartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddCartActionPerformed
+        int quantity = -1;
+        if (txtBookID.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Click on book on table to select!");
+            return;
+        }
+
+        try {
+            quantity = Ulti.getInt(txtAmount.getText().trim());
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Invalid amount of book!");
+            return;
+        }
+
+        String bookID = txtBookID.getText().trim();
+        String title = txtBookName.getText().trim();
+        float price = Float.parseFloat(txtPrice.getText().trim());
+
+        BooksDTO book = findBook(bookID);
+
+        if (book != null) {
+            book.setQuantity(book.getQuantity() + quantity);
+            JOptionPane.showMessageDialog(this, "Add \"" + title + "\" to cart! - Total: " + book.getQuantity());
+        } else {
+            listBookInCart.add(new BooksDTO(bookID, title, quantity, price));
+            JOptionPane.showMessageDialog(this, "Add \"" + title + "\" to cart! - Total: " + quantity);
+            setBtnViewCart();
+        }
+    }//GEN-LAST:event_btnAddCartActionPerformed
+
     
+    public void setBtnViewCart(){
+        btnViewCart.setText(listBookInCart.size() + " items");
+    }
+
+    private BooksDTO findBook(String id) {
+        for (BooksDTO booksDTO : listBookInCart) {
+            if (booksDTO.getId().equals(id)) {
+                return booksDTO;
+            }
+        }
+        return null;
+    }
+
+    private void updateProfile() {
+        new ProfileForm(userDTO, this).setVisible(true);
+
+    }
+
     private void changePass() {
         changePassForm = new ChangePassForm(userDTO.getUserID(), userDAO);
         changePassForm.setVisible(true);
@@ -458,17 +570,19 @@ public class UserForm extends javax.swing.JFrame {
      */
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAddCart;
     private javax.swing.JButton btnViewCart;
     private javax.swing.JButton btnViewHistory;
     private javax.swing.JComboBox<String> cbxSetting;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton2;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -477,7 +591,10 @@ public class UserForm extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
+    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -485,15 +602,13 @@ public class UserForm extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JSpinner jSpinner1;
-    private javax.swing.JTextField jTextField1;
     private javax.swing.JLabel lblUsername;
     private javax.swing.JTable tblBooks;
-    private javax.swing.JTable tblBooks1;
-    private javax.swing.JTextField txtBookSelect;
+    private javax.swing.JTextField txtAmount;
+    private javax.swing.JTextField txtBookID;
+    private javax.swing.JTextField txtBookName;
+    private javax.swing.JTextField txtPrice;
     private javax.swing.JTextField txtSearch;
-    private javax.swing.JTextField txtSearch1;
     // End of variables declaration//GEN-END:variables
 }
